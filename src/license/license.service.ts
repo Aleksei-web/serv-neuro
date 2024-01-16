@@ -29,8 +29,6 @@ export class LicenseService {
   }
 
   async saveResult(key: string, data: {data:string}) {
-    console.log(data)
-    return
     try {
       const license = await this.license.findOne({
         where: [
@@ -43,11 +41,11 @@ export class LicenseService {
       }
       license.data = data.data
       license.isActive = 0
-      console.log('here')
       await this.license.save(license)
 
       return license
     } catch (e) {
+      console.log(e)
       return new HttpException(e.message, HttpStatus.BAD_REQUEST)
     }
   }
