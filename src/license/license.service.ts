@@ -32,11 +32,10 @@ export class LicenseService {
     try {
       const license = await this.license.findOne({
         where: [
-          {key},
-          {isActive: 1}
+          {key}
         ]
       })
-      if (!license) {
+      if (license.isActive  === "0") {
         return new HttpException('Не найдена активная лицензия', HttpStatus.NOT_FOUND)
       }
       license.data = data.data
