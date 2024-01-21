@@ -15,6 +15,9 @@ export class LicenseEntity {
   @Column({type: 'text', nullable: true})
   data: string
 
+  @Column({type: 'int', default: 0})
+  step: number
+
   @CreateDateColumn()
   createdAt: Date;
 

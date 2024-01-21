@@ -22,7 +22,7 @@ export class LicenseController {
   }
 
   @Put(':key')
-  async saveResult(@Param('key') key: string, @Body() data: { data: string }) {
+  async saveResult(@Param('key') key: string, @Body() data: { data: string, step: number, isEnd: boolean }) {
     return await this.licenseService.saveResult(key, data)
   }
 }

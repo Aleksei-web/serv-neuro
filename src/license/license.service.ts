@@ -28,18 +28,32 @@ export class LicenseService {
     return !!license
   }
 
-  async saveResult(key: string, data: {data:string}) {
+  async saveResult(key: string, data: { data: string, step: number, isEnd: boolean }) {
+    console.log(data)
     try {
       const license = await this.license.findOne({
         where: [
           {key}
         ]
       })
-      if (license.isActive  === "0") {
+      if (license.isActive === "0") {
         return new HttpException('Не найдена активная лицензия', HttpStatus.NOT_FOUND)
       }
-      license.data = data.data
-      license.isActive = 0
+
+      if (license.data) {
+        license.data = JSON.stringify([...JSON.parse(license.data), ...JSON.parse(data.data)])
+      } else {
+        license.data = data.data
+      }
+
+      license.step = data.step
+
+      if (data.isEnd) {
+        license.isActive = 0
+      }
+
+
+      console.log(license)
       await this.license.save(license)
 
       return license
@@ -58,7 +72,7 @@ export class LicenseService {
   }
 
   async getResults() {
-    try{
+    try {
       const res = await this.license.find({
         where: [
           {isActive: 0}
@@ -66,7 +80,7 @@ export class LicenseService {
       })
 
       return res.map(el => ({...el, data: JSON.parse(el.data.replaceAll('\\', ''))}))
-    }catch (e){
+    } catch (e) {
       return new HttpException(e.message, HttpStatus.BAD_REQUEST)
     }
   }
