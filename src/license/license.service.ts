@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable, NotFoundException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {LicenseEntity} from "../entity/license.entity";
 import {json} from "express";
@@ -203,9 +203,13 @@ export class LicenseService {
   async getMath(key: string) {
     const res = await this.license.findOne({
       where: [
-        {key: key},
+        { key: key, step: 17 },
       ]
     })
+
+    if(!res){
+      throw new NotFoundException()
+    }
 
     const resData = JSON.parse(res.data)
     const avgDataset = await this.calcAvgDataset()
