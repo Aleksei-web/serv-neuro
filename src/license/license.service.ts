@@ -200,10 +200,10 @@ export class LicenseService {
     ]
   }
 
-  async getMath() {
+  async getMath(key: string) {
     const res = await this.license.findOne({
       where: [
-        {key: "gk-5006"},
+        {key: key},
       ]
     })
 

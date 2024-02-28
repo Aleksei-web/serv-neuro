@@ -27,7 +27,7 @@ export class LicenseController {
   }
 
   @Get('/math/:key')
-  async getMath(){
-    return await this.licenseService.getMath()
+  async getMath(@Param('key') key: string){
+    return await this.licenseService.getMath(key)
   }
 }
