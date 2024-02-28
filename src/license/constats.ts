@@ -1,0 +1,21 @@
+export const CONSTANTS = {
+  TEST_TYPE: {
+    SOLUTIONS: "Принятие решений",
+    NUMBERS: "Обработка информации",
+    CONSISTENT_NUMBERS: "Последовательный",
+    GRADE2: "Оценка 2",
+    SYNCHRONIZE: "Синхронизация",
+    PROGRAMMING: "Программирование",
+    RECOGNIZE: "Распознавание",
+    EQUIVALENCE: "Эквивалентность",
+    COORDINATION: "Координация",
+    CONSISTENT_BALLS: "Концентрация",
+    DECODING: "Декодирование",
+    IDENTITY: "Идентификация",
+    INVESTIGATION: "Расследование",
+    GRADE: "Оценка",
+    MULTIPLE_TASK: "Многозадачность",
+    GRADE3: "Оценка-3",
+    SPEED: "Скорость",
+  },
+};

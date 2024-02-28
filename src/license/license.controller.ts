@@ -25,4 +25,9 @@ export class LicenseController {
   async saveResult(@Param('key') key: string, @Body() data: { data: string, step: number, isEnd: boolean }) {
     return await this.licenseService.saveResult(key, data)
   }
+
+  @Get('/math/:key')
+  async getMath(){
+    return await this.licenseService.getMath()
+  }
 }
