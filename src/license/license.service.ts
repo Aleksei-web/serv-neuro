@@ -1,7 +1,6 @@
 import {HttpException, HttpStatus, Injectable, NotFoundException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {LicenseEntity} from "../entity/license.entity";
-import {json} from "express";
 
 @Injectable()
 export class LicenseService {
@@ -58,7 +57,6 @@ export class LicenseService {
 
       return license
     } catch (e) {
-      console.log(e)
       return new HttpException(e.message, HttpStatus.BAD_REQUEST)
     }
   }
@@ -189,45 +187,144 @@ export class LicenseService {
     }
 
     const total = Object.values(mathResList).reduce((p, c) => p + c) / Object.values(mathResList).length
+    const attentionTotal = Object.values(attention).reduce((p, c) => p + c) / 3
+    const perceptionTotal = Object.values(perception).reduce((p, c) => p + c) / 2
+    const coordinationTotal = Object.values(coordination).reduce((p, c) => p + c) / 2
+    const reasoningTotal = Object.values(reasoning).reduce((p, c) => p + c) / 3
+    const memoryTotal = Object.values(memory).reduce((p, c) => p + c) / 3
 
-    return [
-      Object.values(attention).reduce((p, c) => p + c) / 3,
-      Object.values(perception).reduce((p, c) => p + c) / 2,
-      Object.values(coordination).reduce((p, c) => p + c) / 2,
-      Object.values(reasoning).reduce((p, c) => p + c) / 3,
-      Object.values(memory).reduce((p, c) => p + c) / 3,
-      total
-    ]
+    return {
+      total: [
+        attentionTotal,
+        Object.values(perception).reduce((p, c) => p + c) / 2,
+        Object.values(coordination).reduce((p, c) => p + c) / 2,
+        Object.values(reasoning).reduce((p, c) => p + c) / 3,
+        Object.values(memory).reduce((p, c) => p + c) / 3,
+        total
+      ],
+      attention: [
+        attention.inhibition,
+        attention.dividedAttention,
+        attention.focusedAttention,
+        attentionTotal
+      ],
+      perception: [
+        perception.auditoryPerception,
+        perception.visualPerception,
+        perceptionTotal
+      ],
+      coordination: [
+        coordination.spatialPerception,
+        coordination.handEyeCoordination,
+        coordinationTotal
+      ],
+      reasoning: [
+        reasoning.abilityToEvaluate,
+        reasoning.cognitiveFlexibility,
+        reasoning.reactionTime,
+        reasoningTotal
+      ],
+      memory: [
+        memory.shortTermMemory,
+        memory.nonverbalMemory,
+        memory.verbalMemory,
+        memoryTotal
+      ]
+    }
   }
 
   async getMath(key: string) {
     const res = await this.license.findOne({
       where: [
-        { key: key, step: 17 },
+        {key: key, step: 17},
       ]
     })
 
-    if(!res){
+    if (!res) {
       throw new NotFoundException()
     }
 
     const resData = JSON.parse(res.data)
-    const avgDataset = await this.calcAvgDataset()
-
-    await this.calcAvgDataset()
+    const avg = await this.calcAvgDataset()
+    const avgDatasetTotal = avg.total
+    const avgAttention = avg.attention
+    const avgPerception = avg.perception
+    const avgCoordination = avg.coordination
+    const avgReasoning = avg.reasoning
+    const avgMemory = avg.memory
 
     return {
-      dataset: [{
+      datasetTotal: [{
         label: "Сред.",
-        data: avgDataset,
+        data: avgDatasetTotal,
         backgroundColor: "#26c6da",
       },
         {
           label: "Респондент",
-          data: this.calcDataset(resData),
+          data: this.calcDataset(resData).total,
           backgroundColor: "orange",
         }
-      ]
+      ],
+      datasetAttention: [
+        {
+          label: "Сред.",
+          data: avgAttention,
+          backgroundColor: "#26c6da",
+        },
+        {
+          label: "Респондент",
+          data: this.calcDataset(resData).attention,
+          backgroundColor: "orange",
+        }
+      ],
+      datasetPerception: [
+        {
+          label: "Сред.",
+          data: avgPerception,
+          backgroundColor: "#26c6da",
+        },
+        {
+          label: "Респондент",
+          data: this.calcDataset(resData).perception,
+          backgroundColor: "orange",
+        }
+      ],
+      datasetCoordination: [
+        {
+          label: "Сред.",
+          data: avgCoordination,
+          backgroundColor: "#26c6da",
+        },
+        {
+          label: "Респондент",
+          data: this.calcDataset(resData).coordination,
+          backgroundColor: "orange",
+        }
+      ],
+      datasetReasoning: [
+        {
+          label: "Сред.",
+          data: avgReasoning,
+          backgroundColor: "#26c6da",
+        },
+        {
+          label: "Респондент",
+          data: this.calcDataset(resData).reasoning,
+          backgroundColor: "orange",
+        }
+      ],
+      datasetMemory: [
+        {
+          label: "Сред.",
+          data: avgMemory,
+          backgroundColor: "#26c6da",
+        },
+        {
+          label: "Респондент",
+          data: this.calcDataset(resData).memory,
+          backgroundColor: "orange",
+        }
+      ],
     }
   }
 
@@ -238,19 +335,68 @@ export class LicenseService {
       ]
     })
 
-    const resArr = []
+    const resArrTotal = []
 
-    const all = res.map(el => this.calcDataset(JSON.parse(el.data)));
+    const all = res.map(el => this.calcDataset(JSON.parse(el.data)).total);
     all.forEach(arr => {
       arr.forEach((val, idx) => {
-        if (!resArr[idx]) {
-          resArr[idx] = val
+        if (!resArrTotal[idx]) {
+          resArrTotal[idx] = val
         } else {
-          resArr[idx] = resArr[idx] + val
+          resArrTotal[idx] = resArrTotal[idx] + val
         }
       })
     })
 
-    return resArr.map(el => el / all.length)
+    const attention: number[][] = res.map(el => this.calcDataset(JSON.parse(el.data)).attention);
+    let attentionRes = attention.reduce((prev, curr) => prev.map((v, i) => v + curr[i]))
+    const perception = res.map(el => this.calcDataset(JSON.parse(el.data)).perception);
+    let perceptionRes = perception.reduce((prev, curr) => prev.map((v, i) => v + curr[i]))
+    const coordination = res.map(el => this.calcDataset(JSON.parse(el.data)).coordination);
+    let coordinationRes = coordination.reduce((prev, curr) => prev.map((v, i) => v + curr[i]))
+    const reasoning = res.map(el => this.calcDataset(JSON.parse(el.data)).reasoning);
+    const reasoningRes = reasoning.reduce((prev, curr) => prev.map((v, i) => v + curr[i]))
+    const memory = res.map(el => this.calcDataset(JSON.parse(el.data)).memory);
+    const memoryRes = memory.reduce((prev, curr) => prev.map((v, i) => v + curr[i]))
+
+
+    return {
+      total: resArrTotal.map(el => el / all.length),
+      attention: attentionRes.map(el => el / attention.length),
+      perception: perceptionRes.map(el => el / perception.length),
+      coordination: coordinationRes.map(el => el / coordination.length),
+      reasoning: reasoningRes.map(el => el / reasoning.length),
+      memory: memoryRes.map(el => el / memory.length)
+    }
+  }
+
+  async putUser(key: string, email: string, userName: string, dateStart: string, birthDate: string) {
+    const license = await this.license.findOne({
+      where: [
+        {key},
+      ]
+    })
+
+    if(!license) {
+      throw new NotFoundException()
+    }
+
+    license.userName = userName;
+    license.email = email;
+    license.dateStart = dateStart
+    license.birthDate = birthDate
+
+    return await this.license.save(license)
+  }
+
+  async changeSendEmail (key: string){
+    const license = await this.license.findOne({
+      where: [
+        {key},
+      ]
+    })
+
+    license.isSendEmail = 1;
+    return await this.license.save(license)
   }
 }

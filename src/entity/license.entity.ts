@@ -18,6 +18,22 @@ export class LicenseEntity {
   @Column({type: 'int', default: 0})
   step: number
 
+  @Column({type: 'text', nullable: true})
+  userName: string
+
+  @Column({type: 'text', nullable: true})
+  email: string
+
+  @Column({type: 'text', nullable: true})
+  birthDate: string
+
+  @Column({type: 'date', nullable: true})
+  dateStart: Date
+
+  @Column({type: 'bit', default: 0})
+  isSendEmail: boolean
+
+
   @CreateDateColumn()
   createdAt: Date;
 
