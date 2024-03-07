@@ -35,12 +35,18 @@ export class LicenseService {
           {key}
         ]
       })
+      console.log('Обновляю лицензию', key, data.data)
       if (license.isActive === "0") {
         return new HttpException('Не найдена активная лицензия', HttpStatus.NOT_FOUND)
       }
 
       if (license.data) {
-        license.data = JSON.stringify([...JSON.parse(license.data), ...JSON.parse(data.data)])
+        const keyNew = JSON.parse(data.data).type
+        let existsKey = license.data ? JSON.parse(license.data || '[]').find(el => el.type === keyNew) : false
+        if (existsKey) {
+          return new HttpException('Тест уже пройден.', HttpStatus.BAD_REQUEST)
+        }
+        license.data = JSON.stringify([...JSON.parse(license.data || '[]'), ...JSON.parse(data.data)])
       } else {
         license.data = data.data
       }
@@ -51,8 +57,6 @@ export class LicenseService {
         license.isActive = 0
       }
 
-
-      console.log(license)
       await this.license.save(license)
 
       return license
@@ -178,6 +182,7 @@ export class LicenseService {
         mathResList.DECODING + mathResList.IDENTITY + mathResList.INVESTIGATION + mathResList.GRADE + mathResList.MULTIPLE_TASK) / 11
     }
 
+    // console.log('shortTermMemory', resData.filter(el => el.type === TEST_TYPE.CONSISTENT_NUMBERS))
     // память
     const memory = {
       shortTermMemory: (mathResList.CONSISTENT_NUMBERS + mathResList.GRADE2 + mathResList.RECOGNIZE + mathResList.CONSISTENT_BALLS + mathResList.IDENTITY +
@@ -377,7 +382,7 @@ export class LicenseService {
       ]
     })
 
-    if(!license) {
+    if (!license) {
       throw new NotFoundException()
     }
 
@@ -389,7 +394,7 @@ export class LicenseService {
     return await this.license.save(license)
   }
 
-  async changeSendEmail (key: string){
+  async changeSendEmail(key: string) {
     const license = await this.license.findOne({
       where: [
         {key},
