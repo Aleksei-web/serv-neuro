@@ -478,7 +478,14 @@ const arr = Array(2000).fill(1).map((_, i) => i+21)
     return {
       attention: attentionTotal,
       coordination: coordinationTotal,
-      reasoning: reasoningTotal
+      reasoning: reasoningTotal,
+      inhibition: attention.inhibition,
+      dividedAttention: attention.dividedAttention,
+      focusedAttention: attention.focusedAttention,
+      spatialPerception: coordination.spatialPerception,
+      abilityToEvaluate: reasoning.abilityToEvaluate,
+      cognitiveFlexibility: reasoning.cognitiveFlexibility,
+      reactionTime: reasoning.reactionTime
     }
   }
 
@@ -495,11 +502,33 @@ const arr = Array(2000).fill(1).map((_, i) => i+21)
     let coordinationRes = coordination.reduce((prev, curr) => prev + curr) / coordination.length
     const reasoning = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).reasoning);
     const reasoningRes = reasoning.reduce((prev, curr) => prev + curr) / reasoning.length
+    const inhibition = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).inhibition);
+    const inhibitionRes = inhibition.reduce((prev, curr) => prev + curr) / inhibition.length
+    const dividedAttention = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).dividedAttention);
+    const dividedAttentionRes = dividedAttention.reduce((prev, curr) => prev + curr) / dividedAttention.length
+    const focusedAttention = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).focusedAttention);
+    const focusedAttentionRes = focusedAttention.reduce((prev, curr) => prev + curr) / focusedAttention.length
+    const spatialPerception = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).spatialPerception);
+    const spatialPerceptionRes = spatialPerception.reduce((prev, curr) => prev + curr) / spatialPerception.length
+    const abilityToEvaluate = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).abilityToEvaluate);
+    const abilityToEvaluateRes = abilityToEvaluate.reduce((prev, curr) => prev + curr) / abilityToEvaluate.length
+    const cognitiveFlexibility = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).cognitiveFlexibility);
+    const cognitiveFlexibilityRes = cognitiveFlexibility.reduce((prev, curr) => prev + curr) / cognitiveFlexibility.length
+    const reactionTime = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).cognitiveFlexibility);
+    const reactionTimeRes = reactionTime.reduce((prev, curr) => prev + curr) / reactionTime.length
+
 
     return {
       attention: attentionRes,
       coordination: coordinationRes,
       reasoning: reasoningRes,
+      inhibition: inhibitionRes,
+      dividedAttention: dividedAttentionRes,
+      focusedAttention: focusedAttentionRes,
+      spatialPerceptionRes: spatialPerceptionRes,
+      abilityToEvaluate: abilityToEvaluateRes,
+      cognitiveFlexibility: cognitiveFlexibilityRes,
+      reactionTime: reactionTimeRes
     }
   }
 }

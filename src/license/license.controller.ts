@@ -61,7 +61,7 @@ export class LicenseController {
     });
 
     const info = await transporter.sendMail({
-      from: '"Алексей Максимушкин" <maksimushkiun@mail.ru>', // sender address
+      from: '<neurotest@b-gid.ru>', // sender address
       to: email, // list of receivers
       subject: "Результаты теста.", // Subject line
       html: "<p>Вы прошли тест на определение когнитивных навыков.</p>", // html body
