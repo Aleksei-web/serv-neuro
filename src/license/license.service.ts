@@ -514,7 +514,7 @@ const arr = Array(2000).fill(1).map((_, i) => i+21)
     const abilityToEvaluateRes = abilityToEvaluate.reduce((prev, curr) => prev + curr) / abilityToEvaluate.length
     const cognitiveFlexibility = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).cognitiveFlexibility);
     const cognitiveFlexibilityRes = cognitiveFlexibility.reduce((prev, curr) => prev + curr) / cognitiveFlexibility.length
-    const reactionTime = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).cognitiveFlexibility);
+    const reactionTime = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).reactionTime);
     const reactionTimeRes = reactionTime.reduce((prev, curr) => prev + curr) / reactionTime.length
 
 
