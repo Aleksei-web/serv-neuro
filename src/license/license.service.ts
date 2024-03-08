@@ -2,6 +2,26 @@ import {HttpException, HttpStatus, Injectable, NotFoundException} from '@nestjs/
 import {InjectRepository} from "@nestjs/typeorm";
 import {LicenseEntity} from "../entity/license.entity";
 
+const TEST_TYPE = {
+  INVESTIGATION: "Расследование",
+  IDENTITY: "Идентификация",
+  SOLUTIONS: "Принятие решений",
+  NUMBERS: "Обработка информации",
+  CONSISTENT_NUMBERS: "Последовательный",
+  GRADE2: "Оценка 2",
+  SYNCHRONIZE: "Синхронизация",
+  PROGRAMMING: "Программирование",
+  RECOGNIZE: "Распознавание",
+  EQUIVALENCE: "Эквивалентность",
+  COORDINATION: "Координация",
+  CONSISTENT_BALLS: "Концентрация",
+  DECODING: "Декодирование",
+  GRADE: "Оценка",
+  MULTIPLE_TASK: "Многозадачность",
+  GRADE3: "Оценка-3",
+  SPEED: "Скорость",
+}
+
 @Injectable()
 export class LicenseService {
 
@@ -16,16 +36,6 @@ export class LicenseService {
     } catch (e) {
       return new HttpException(e.message, HttpStatus.BAD_REQUEST)
     }
-  }
-
-  async isActive(key: string): Promise<boolean> {
-    const license = await this.license.findOne({
-      where: [
-        {key},
-        {isActive: true}
-      ]
-    })
-    return !!license
   }
 
   async saveResult(key: string, data: { data: string, step: number, isEnd: boolean }) {
@@ -88,26 +98,6 @@ export class LicenseService {
   }
 
   calcDataset(resData: any) {
-    const TEST_TYPE = {
-      INVESTIGATION: "Расследование",
-      IDENTITY: "Идентификация",
-      SOLUTIONS: "Принятие решений",
-      NUMBERS: "Обработка информации",
-      CONSISTENT_NUMBERS: "Последовательный",
-      GRADE2: "Оценка 2",
-      SYNCHRONIZE: "Синхронизация",
-      PROGRAMMING: "Программирование",
-      RECOGNIZE: "Распознавание",
-      EQUIVALENCE: "Эквивалентность",
-      COORDINATION: "Координация",
-      CONSISTENT_BALLS: "Концентрация",
-      DECODING: "Декодирование",
-      GRADE: "Оценка",
-      MULTIPLE_TASK: "Многозадачность",
-      GRADE3: "Оценка-3",
-      SPEED: "Скорость",
-    }
-
     const mathResList = {
       INVESTIGATION: resData.filter(el => el.type === TEST_TYPE.INVESTIGATION).map(e => Number(e.total.split('=')[1]))[0],
       IDENTITY: resData.filter(el => el.type === TEST_TYPE.IDENTITY).map(e => Number(e.total.split('=')[1]))[0],
@@ -238,17 +228,7 @@ export class LicenseService {
     }
   }
 
-  async getMath(key: string) {
-    const res = await this.license.findOne({
-      where: [
-        {key: key, step: 17},
-      ]
-    })
-
-    if (!res) {
-      throw new NotFoundException()
-    }
-
+  async calcDefaultMath(res: any) {
     const resData = JSON.parse(res.data)
     const avg = await this.calcAvgDataset()
     const avgDatasetTotal = avg.total
@@ -333,6 +313,25 @@ export class LicenseService {
     }
   }
 
+  async getMath(key: string) {
+    const res = await this.license.findOne({
+      where: [
+        {key: key},
+      ]
+    })
+
+    if ((res.type === 'default' && res.step !== 17) || res.type === 'mini' && res.step !== 4) {
+      throw new NotFoundException()
+    }
+
+    if (res.type === 'default') {
+      return await this.calcDefaultMath(res)
+    }
+    if (res.type === 'mini') {
+      return await this.calcMiniMath(res)
+    }
+  }
+
   async calcAvgDataset() {
     const res = await this.license.find({
       where: [
@@ -403,5 +402,91 @@ export class LicenseService {
 
     license.isSendEmail = 1;
     return await this.license.save(license)
+  }
+
+  private async calcMiniMath(res: any) {
+    const avgDatasetTotal = await this.calcAvgDatasetMini()
+    const resData = JSON.parse(res.data)
+    return {
+      datasetTotal: [{
+        label: "Сред.",
+        data: Object.values(avgDatasetTotal),
+        backgroundColor: "#26c6da",
+      },
+        {
+          label: "Респондент",
+          data: Object.values(this.calcDatasetMini(resData, true)),
+          backgroundColor: "orange",
+        }
+      ],
+    }
+  }
+
+  private calcDatasetMini(resData: any, isUser = false) {
+    const mathResList = {
+      PROGRAMMING: resData.filter(el => el.type === TEST_TYPE.PROGRAMMING).map(e => Number(e.total.split('=')[1]))[0],
+      COORDINATION: resData.filter(el => el.type === TEST_TYPE.COORDINATION).map(e => Number(e.total.split('=')[1]))[0],
+      CONSISTENT_BALLS: resData.filter(el => el.type === TEST_TYPE.CONSISTENT_BALLS).map(e => Number(e.total.split('=')[1]))[0],
+      MULTIPLE_TASK: resData.filter(el => el.type === TEST_TYPE.MULTIPLE_TASK).map(e => Number(e.total.split('=')[1]))[0],
+    }
+
+    // внимание
+    const attention = {
+      inhibition: (
+        mathResList.PROGRAMMING +
+        mathResList.COORDINATION +
+        mathResList.MULTIPLE_TASK) / 3,
+      dividedAttention: (
+        mathResList.PROGRAMMING +
+        mathResList.CONSISTENT_BALLS +
+        mathResList.MULTIPLE_TASK) / 3,
+      focusedAttention: (
+        mathResList.COORDINATION +
+        mathResList.CONSISTENT_BALLS +
+        mathResList.MULTIPLE_TASK) / 3
+    }
+
+    //  координация
+    const coordination = {
+      spatialPerception: (mathResList.PROGRAMMING + mathResList.COORDINATION + mathResList.CONSISTENT_BALLS + mathResList.MULTIPLE_TASK) / 4
+    }
+
+    // рассуждение
+    const reasoning = {
+      abilityToEvaluate: (mathResList.PROGRAMMING + mathResList.MULTIPLE_TASK) / 2,
+      cognitiveFlexibility: (mathResList.COORDINATION + mathResList.MULTIPLE_TASK) / 2,
+      reactionTime: (mathResList.CONSISTENT_BALLS + mathResList.MULTIPLE_TASK) / 2
+    }
+
+    const attentionTotal = Object.values(attention).reduce((p, c) => p + c) / 3
+    const coordinationTotal = coordination.spatialPerception
+    const reasoningTotal = Object.values(reasoning).reduce((p, c) => p + c) / 3
+
+    return {
+      attention: attentionTotal,
+      coordination: coordinationTotal,
+      reasoning: reasoningTotal
+    }
+  }
+
+  private async calcAvgDatasetMini() {
+    const res = await this.license.query(`select *
+                                          from license
+                                          where (step = 17 and type = 'default')
+                                             or (step = 4 and type = 'mini')`);
+
+    const attention: number[] = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).attention);
+
+    let attentionRes = attention.reduce((prev, curr) => prev + curr) / attention.length
+    const coordination = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).coordination);
+    let coordinationRes = coordination.reduce((prev, curr) => prev + curr) / coordination.length
+    const reasoning = res.map(el => this.calcDatasetMini(JSON.parse(el.data)).reasoning);
+    const reasoningRes = reasoning.reduce((prev, curr) => prev + curr) / reasoning.length
+
+    return {
+      attention: attentionRes,
+      coordination: coordinationRes,
+      reasoning: reasoningRes,
+    }
   }
 }

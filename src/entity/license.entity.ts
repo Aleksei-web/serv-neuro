@@ -18,6 +18,9 @@ export class LicenseEntity {
   @Column({type: 'int', default: 0})
   step: number
 
+  @Column({type: 'text', default: 'default'})
+  type: string
+
   @Column({type: 'text', nullable: true})
   userName: string
 
