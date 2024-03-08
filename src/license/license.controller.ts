@@ -1,7 +1,6 @@
 import {Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors} from '@nestjs/common';
 import {LicenseService} from "./license.service";
 import {FileInterceptor} from '@nestjs/platform-express';
-import * as fs from 'node:fs'
 import * as nodemailer from 'nodemailer'
 import * as process from "process";
 
@@ -63,7 +62,7 @@ export class LicenseController {
 
     const info = await transporter.sendMail({
       from: '"Алексей Максимушкин" <maksimushkiun@mail.ru>', // sender address
-      to: "maksimushkin92@gmail.com", // list of receivers
+      to: email, // list of receivers
       subject: "Результаты теста.", // Subject line
       html: "<p>Вы прошли тест на определение когнитивных навыков.</p>", // html body
       attachments: [

@@ -30,9 +30,22 @@ export class LicenseService {
 
   async new(key: string) {
     try {
-      const item = await this.license.create({key})
-      await this.license.insert(item)
-      return item
+const arr = Array(2000).fill(1).map((_, i) => i+21)
+      for(let a of arr){
+        console.log({a})
+        let key = ''
+        if(a < 100){
+          key = `m-00${a.toString()}`
+        }if(a < 1000){
+          key = `m-0${a.toString()}`
+        } if(a >= 1000){
+          key = `m-${a.toString()}`
+        }
+        console.log('ee', key)
+        // const item = await this.license.create({key: key, type: 'mini'})
+        // await this.license.insert(item)
+      }
+
     } catch (e) {
       return new HttpException(e.message, HttpStatus.BAD_REQUEST)
     }
